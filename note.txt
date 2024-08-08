@@ -1,0 +1,3 @@
+chuyển vào thư mục dist của thư viện
+lênh build: ng build authService --configuration=production
+lênh publish: npm publish --access public

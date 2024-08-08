@@ -96,6 +96,39 @@
           }
         }
       }
+    },
+    "authService": {
+      "projectType": "library",
+      "root": "projects/auth-service",
+      "sourceRoot": "projects/auth-service/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/auth-service/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/auth-service/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/auth-service/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/auth-service/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
     }
   }
 }
