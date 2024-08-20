@@ -3,16 +3,19 @@ import { inject, Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { lastValueFrom, Observable } from 'rxjs';
-interface AuthConfig {
+
+export interface AuthConfig {
   loginURl: string;
   refreshTokenURL: string;
   logoutURL?: string | undefined;
   timeToRefreshToken?: number;
+  refreshFunctionOfInterceptor?: any;
+  logoutFunctionOfInterceptor?: any;
 }
 @Injectable({
   providedIn: 'root',
 })
-export class AuthServiceService {
+export class AuthService {
   _http = inject(HttpClient);
   idTimeOut: any;
   config: AuthConfig = {
@@ -20,6 +23,8 @@ export class AuthServiceService {
     refreshTokenURL: '',
     logoutURL: '',
     timeToRefreshToken: 60000,
+    refreshFunctionOfInterceptor: () => {},
+    logoutFunctionOfInterceptor: () => {},
   };
   constructor(
     private jwtHelper: JwtHelperService,
@@ -46,34 +51,29 @@ export class AuthServiceService {
   async loginNoAuth2(userName: string, password: string): Promise<any> {
     const data = await lastValueFrom(this.login(userName, password));
     const userInfor = { ...data };
-    delete userInfor.token;
-    delete userInfor.refreshToken;
+    delete userInfor?.token;
+    delete userInfor?.refreshToken;
     localStorage.clear();
-    localStorage.setItem('access_token', data.token);
-    localStorage.setItem('refresh_token', data.refreshToken);
+    localStorage.setItem('access_token', data?.token);
+    localStorage.setItem('refresh_token', data?.refreshToken);
+    localStorage.setItem(
+      'expires_at',
+      (this.jwtHelper.decodeToken(data?.token).exp * 1000).toString()
+    );
+    localStorage.setItem('userInfor', JSON.stringify(userInfor));
+    return data;
+  }
+
+  async refreshTokenNoAuth2(): Promise<any> {
+    const data = await lastValueFrom(this.refreshToken());
+    localStorage.setItem('access_token', data?.token);
+    localStorage.setItem('refresh_token', data?.refreshToken);
     localStorage.setItem(
       'expires_at',
       (this.jwtHelper.decodeToken(data.token).exp * 1000).toString()
     );
-    localStorage.setItem('userInfor', JSON.stringify(userInfor));
-    return true;
-  }
-
-  refreshTokenNoAuth2() {
-    this.refreshToken().subscribe(
-      (data) => {
-        localStorage.setItem('access_token', data.token);
-        localStorage.setItem('refresh_token', data.refreshToken);
-        localStorage.setItem(
-          'expires_at',
-          (this.jwtHelper.decodeToken(data.token).exp * 1000).toString()
-        );
-        this.silentRefreshToken();
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
+    this.silentRefreshToken();
+    return data;
   }
   // Schedule token refresh
   silentRefreshToken() {
