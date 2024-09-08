@@ -52,6 +52,7 @@ function handle401Error(
       switchMap((token: any) => {
         isRefreshing = false;
         refreshTokenSubject.next(token.token);
+        refreshTokenSubject.complete();
         return next(
           request.clone({
             setHeaders: { Authorization: `Bearer ${token.token}` },
@@ -60,6 +61,11 @@ function handle401Error(
       }),
       catchError((err) => {
         isRefreshing = false;
+        if (err.status === 401) {
+          authService.logOutNoAuth2();
+          localStorage.clear();
+          window.location.reload();
+        }
         // authService.logout(); // Tùy chỉnh việc đăng xuất người dùng nếu làm mới token thất bại
         return throwError(() => err);
       })

@@ -5,8 +5,8 @@ import { OAuthService } from 'angular-oauth2-oidc';
 import { lastValueFrom, Observable } from 'rxjs';
 
 export interface AuthConfig {
-  loginURl: string;
-  refreshTokenURL: string;
+  loginURl?: string;
+  refreshTokenURL?: string;
   logoutURL?: string | undefined;
   timeToRefreshToken?: number;
   refreshFunctionOfInterceptor?: any;
@@ -32,14 +32,14 @@ export class AuthService {
   ) {}
 
   private login(userName: string, password: string): Observable<any> {
-    return this._http.post<any>(this.config.loginURl, {
+    return this._http.post<any>(this.config.loginURl!, {
       username: userName,
       password: password,
     });
   }
 
   private refreshToken(): Observable<any> {
-    return this._http.post<any>(this.config.refreshTokenURL, {
+    return this._http.post<any>(this.config.refreshTokenURL!, {
       token: localStorage.getItem('refresh_token'),
     });
   }
